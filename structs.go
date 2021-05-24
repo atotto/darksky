@@ -14,6 +14,9 @@ type ForecastRequest struct {
 	Longitude Measurement
 	Time      Timestamp
 	Options   ForecastRequestOptions
+
+	Provider   string
+	Prediction string
 }
 
 // ForecastRequestOptions are optional and passed as query parameters

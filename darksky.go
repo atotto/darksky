@@ -3,11 +3,12 @@ package darksky
 import (
 	"fmt"
 	"net/http"
+	"strings"
 )
 
-// DarkSky API endpoint
+// OpenWeather API endpoint
 var (
-	BaseUrl = "https://api.darksky.net/forecast"
+	BaseUrl = "https://api.openweathermap.org/data/2.5/onecall"
 )
 
 // DarkSky Api client
@@ -34,11 +35,21 @@ func NewWithClient(apiKey string, client *http.Client) DarkSky {
 func (d *darkSky) Forecast(request ForecastRequest) (ForecastResponse, error) {
 	response := ForecastResponse{}
 
-	requestUrl := d.buildRequestUrl(request)
+	if strings.Contains(BaseUrl, "darksky") {
+		requestUrl := d.buildRequestUrl(request)
+		err := get(d.Client, requestUrl, &response)
+		return response, err
+	}
 
-	err := get(d.Client, requestUrl, &response)
+	owmResponse := owmForecastResponse{}
+	requestUrl := d.buildOwmRequestUrl(request)
+	err := get(d.Client, requestUrl, &owmResponse)
+	if err != nil {
+		return response, err
+	}
 
-	return response, err
+	err = convert(&owmResponse, &response, request.Prediction)
+	return response, nil
 }
 
 func (d *darkSky) buildRequestUrl(request ForecastRequest) string {
@@ -51,6 +62,17 @@ func (d *darkSky) buildRequestUrl(request ForecastRequest) string {
 	queryString := request.Options.Encode()
 	if queryString != "" {
 		requestUrl = requestUrl + "?" + queryString
+	}
+
+	return requestUrl
+}
+
+func (d *darkSky) buildOwmRequestUrl(request ForecastRequest) string {
+	requestUrl := fmt.Sprintf("%s?appid=%s&lat=%g&lon=%g", BaseUrl, d.ApiKey, request.Latitude, request.Longitude)
+
+	queryString := request.Options.Encode()
+	if queryString != "" {
+		requestUrl = requestUrl + "&" + queryString
 	}
 
 	return requestUrl

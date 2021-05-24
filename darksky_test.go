@@ -68,7 +68,7 @@ func TestParseForecastOffsetInteger(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	want := float64(-5)
+	want := float64(-4)
 	have := float64(forecast.Offset)
 	if want != have {
 		t.Errorf("want %f, have %f", want, have)
