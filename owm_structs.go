@@ -1,6 +1,6 @@
 package darksky
 
-// https://openweathermap.org/api/one-call-api
+// https://openweathermap.org/api/one-call-3
 type owmForecastResponse struct {
 	Latitude       Measurement   `json:"lat"`
 	Longitude      Measurement   `json:"lon"`
@@ -10,6 +10,16 @@ type owmForecastResponse struct {
 	Minutely       []owmMinutely `json:"minutely,omitempty"`
 	Hourly         []owmHourly   `json:"hourly,omitempty"`
 	Daily          []owmDaily    `json:"daily,omitempty"`
+	Alerts         []owmAlert    `json:"alerts,omitempty"`
+}
+
+type owmAlert struct {
+	SenderName  string    `json:"sender_name"`
+	Event       string    `json:"event"`
+	Start       Timestamp `json:"start"`
+	End         Timestamp `json:"end"`
+	Description string    `json:"description"`
+	Tags        []string  `json:"tags,omitempty"`
 }
 
 type owmWeather struct {
@@ -40,6 +50,12 @@ type owmCurrent struct {
 	WindDeg     Measurement  `json:"wind_deg"`
 	WindGust    Measurement  `json:"wind_gust"`
 	Weather     []owmWeather `json:"weather,omitempty"`
+	Rain        struct {
+		OneH Measurement `json:"1h"`
+	} `json:"rain,omitempty"`
+	Snow struct {
+		OneH Measurement `json:"1h"`
+	} `json:"snow,omitempty"`
 }
 
 type owmHourly struct {
@@ -72,6 +88,7 @@ type owmDaily struct {
 	Moonrise    Timestamp `json:"moonrise"`
 	Moonset     Timestamp `json:"moonset"`
 	MoonPhase   float64   `json:"moon_phase"`
+	Summary     string    `json:"summary,omitempty"`
 	Temperature struct {
 		Day   Measurement `json:"day"`
 		Min   Measurement `json:"min"`

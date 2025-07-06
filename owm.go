@@ -14,6 +14,7 @@ func convert(o *owmForecastResponse, r *ForecastResponse, prediction string) err
 	r.Minutely = convertMinutely(o.Minutely)
 	r.Hourly = convertHourly(o.Hourly, o.Daily, prediction)
 	r.Daily = convertDaily(o.Daily)
+	r.Alerts = convertAlerts(o.Alerts)
 	return nil
 }
 
@@ -30,7 +31,7 @@ func convertCurrent(o *owmCurrent) *DataPoint {
 		Icon:                 icon,
 		NearestStormDistance: 0,
 		NearestStormBearing:  0,
-		PrecipIntensity:      0,
+		PrecipIntensity:      o.Rain.OneH + o.Snow.OneH,
 		PrecipIntensityError: 0,
 		PrecipProbability:    0,
 		Temperature:          o.Temperature,
@@ -196,18 +197,19 @@ func convertDaily(daily []owmDaily) *DataBlock {
 			summary = w.Description
 			icon = w.Icon
 		}
+
 		data = append(data, DataPoint{
 			Time:        o.DataTime,
 			Summary:     summary,
 			Icon:        icon,
 			SunriseTime: o.Sunrise,
 			SunsetTime:  o.Sunset,
-			MoonPhase:   0,
+			MoonPhase:   Measurement(o.MoonPhase),
 
 			PrecipIntensity:        o.Rain + o.Snow,
 			PrecipIntensityMax:     0,
 			PrecipIntensityMaxTime: 0,
-			PrecipProbability:      0,
+			PrecipProbability:      o.Pop,
 			PrecipType:             "",
 
 			TemperatureHigh:     o.Temperature.Day,
@@ -250,4 +252,25 @@ func convertDaily(daily []owmDaily) *DataBlock {
 		Summary: "",
 		Icon:    "",
 	}
+}
+
+func convertAlerts(alerts []owmAlert) []*Alert {
+	if len(alerts) == 0 {
+		return nil
+	}
+
+	result := make([]*Alert, 0, len(alerts))
+	for _, o := range alerts {
+		result = append(result, &Alert{
+			Title:       o.Event,
+			Description: o.Description,
+			Time:        o.Start,
+			Expires:     o.End,
+			Severity:    "",
+			Regions:     []string{},
+			Uri:         "",
+		})
+	}
+
+	return result
 }

@@ -8,7 +8,7 @@ import (
 
 // OpenWeather API endpoint
 var (
-	BaseUrl = "https://api.openweathermap.org/data/2.5/onecall"
+	BaseUrl = "https://api.openweathermap.org/data/3.0/onecall"
 )
 
 // DarkSky Api client
